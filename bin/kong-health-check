@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Check the health of the Kong API
+fail_count=1
+
+while true
+do
+  http_status=$(curl --write-out %{http_code} --silent --output /dev/null $1)
+
+  # Kong will respond with 426 when HTTPS is required and 401 when API key is required 
+  if [ "$http_status" -eq "200" ] || [ "$http_status" -eq "426" ] || [ "$http_status" -eq "401" ] ; then
+    echo "$(date -u) Kong API available"
+    exit 0
+  else
+    if [ "$fail_count" -eq "11" ]; then
+      echo "$(date -u) Kong API unavailable (status $http_status)"
+      exit 2
+    else
+      echo "$(date -u) Attempt ${fail_count}/10: Kong API not yet available"
+      sleep 30
+      fail_count=$[$fail_count +1]
+    fi
+  fi
+done
