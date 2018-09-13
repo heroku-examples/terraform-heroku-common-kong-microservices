@@ -4,7 +4,7 @@ variable "name" {
 
 variable "dns_zone" {
   type        = "string"
-  description = "DNS zone for new records (must already be setup in the Dyn account)"
+  description = "DNS zone for new records (must already be setup in the DNSimple account)"
 }
 
 variable "heroku_enterprise_team" {
@@ -41,8 +41,9 @@ provider "heroku" {
 provider "kong" {
   version = "~> 1.7"
 
-  # TODO Use insecure until DNS is ready at dnsimple
-  kong_admin_uri = "${local.kong_insecure_admin_uri}"
+  # Optional: use insecure until DNS is ready at dnsimple
+  # kong_admin_uri = "${local.kong_insecure_admin_uri}"
+  kong_admin_uri = "${local.kong_admin_uri}"
   kong_api_key   = "${random_id.kong_admin_api_key.b64_url}"
 }
 
@@ -67,6 +68,7 @@ resource "heroku_space" "default" {
 resource "heroku_app" "kong" {
   name  = "${local.kong_app_name}"
   space = "${heroku_space.default.name}"
+  acm   = true
 
   config_vars {
     KONG_HEROKU_ADMIN_KEY = "${random_id.kong_admin_api_key.b64_url}"
@@ -83,7 +85,6 @@ resource "heroku_app" "kong" {
 resource "heroku_domain" "kong" {
   app        = "${heroku_app.kong.id}"
   hostname   = "${heroku_app.kong.name}.${var.dns_zone}"
-  depends_on = ["heroku_app_release.kong"]
 }
 
 resource "dnsimple_record" "kong" {
@@ -125,15 +126,16 @@ resource "heroku_formation" "kong" {
   depends_on = ["heroku_app_release.kong", "dnsimple_record.kong"]
 
   provisioner "local-exec" {
-    # TODO Use insecure until DNS is ready at dnsimple
-    command = "./bin/kong-health-check ${local.kong_insecure_base_url}/kong-admin"
+    # Optional: use insecure until DNS is ready at dnsimple
+    # command = "./bin/kong-health-check ${local.kong_insecure_base_url}/kong-admin"
+    command = "./bin/kong-health-check ${local.kong_base_url}/kong-admin"
   }
 }
 
 # Internal app w/ proxy config
 
 resource "heroku_app" "wasabi" {
-  name             = "${var.name}-wasabi-int"
+  name             = "${var.name}-wasabi"
   space            = "${heroku_space.default.name}"
   internal_routing = true
 
@@ -175,19 +177,34 @@ resource "kong_service" "wasabi" {
   depends_on = ["heroku_formation.kong"]
 }
 
-resource "kong_route" "wasabi" {
-  protocols  = ["http"]
-  paths      = ["/wasabi"]
+resource "kong_route" "wasabi_hostname" {
+  protocols  = ["https"]
+  hosts      = [ "${heroku_app.wasabi.name}.${var.dns_zone}" ]
   strip_path = true
   service_id = "${kong_service.wasabi.id}"
 }
 
+resource "heroku_domain" "wasabi" {
+  # The internal app's public DNS name is created on the Kong proxy.
+  app        = "${heroku_app.kong.id}"
+  hostname   = "${heroku_app.wasabi.name}.${var.dns_zone}"
+}
+
+resource "dnsimple_record" "wasabi" {
+  domain = "${var.dns_zone}"
+  name   = "${heroku_app.wasabi.name}"
+  value  = "${heroku_domain.wasabi.cname}"
+  type   = "CNAME"
+  ttl    = 30
+}
+
 resource "kong_plugin" "wasabi_hello_world" {
   name     = "hello-world-header"
-  route_id = "${kong_route.wasabi.id}"
+  service_id = "${kong_service.wasabi.id}"
 }
 
 output "wasabi_service_url" {
-  # TODO Use insecure until DNS is ready at dnsimple
-  value = "${local.kong_insecure_base_url}/wasabi"
+  # Optional: use insecure until DNS is ready at dnsimple
+  # value = "${local.kong_insecure_base_url}/wasabi"
+  value = "https://${heroku_app.wasabi.name}.${var.dns_zone}"
 }

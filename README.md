@@ -11,7 +11,9 @@
 4. Set Heroku API key
     1. `heroku authorizations:create -d terraform-heroku-kong-microservices`
     2. `export HEROKU_API_KEY=<"Token" value from the authorization>`
-5. Set [dnsimple credentials](https://support.dnsimple.com/articles/api-access-token/)
-    * `export DNSIMPLE_ACCOUNT=xxxxx DNSIMPLE_TOKEN=yyyyy`
+5. Setup DNS
+    1. add a domain (zone) to a [DNSimple](https://dnsimple.com) account
+    2. locate the account ID & API token ([help](https://support.dnsimple.com/articles/api-access-token/))
+    3. `export DNSIMPLE_ACCOUNT=xxxxx DNSIMPLE_TOKEN=yyyyy`
 6. `terraform init`
 7. `terraform apply -var name=kong-micro -var dns_zone=example.com -var heroku_enterprise_team=example-team -var hello_world_header_message=🦋`
