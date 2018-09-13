@@ -85,6 +85,7 @@ resource "heroku_app" "kong" {
 resource "heroku_domain" "kong" {
   app        = "${heroku_app.kong.id}"
   hostname   = "${heroku_app.kong.name}.${var.dns_zone}"
+  depends_on = ["heroku_app_release.kong"]
 }
 
 resource "dnsimple_record" "kong" {
@@ -188,6 +189,7 @@ resource "heroku_domain" "wasabi" {
   # The internal app's public DNS name is created on the Kong proxy.
   app        = "${heroku_app.kong.id}"
   hostname   = "${heroku_app.wasabi.name}.${var.dns_zone}"
+  depends_on = ["heroku_app_release.kong"]
 }
 
 resource "dnsimple_record" "wasabi" {
