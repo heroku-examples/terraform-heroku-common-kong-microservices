@@ -25,7 +25,7 @@ The primary components are:
 
 * [Heroku](https://www.heroku.com/home)
   * install [command-line tools (CLI)](https://toolbelt.heroku.com)
-  * [a free account](https://signup.heroku.com)
+  * [an account](https://signup.heroku.com) (must be a member of an Enterprise account for access to Private Spaces)
 * [DNSimple](https://dnsimple.com)
   * at least a personal account ($5/month)
   * a domain name added to that account
