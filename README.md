@@ -19,7 +19,7 @@ a Kong gateway, & DNSimple](doc/terraform-heroku-kong-microservices-v01.png)
 
 ## Challenges & Caveats
 
-* **Connecting the Terraform config with Heroku slugs.** This proof-of-concept [contains slug archives](slugs/) that were manually extracted with the Heroku API from pre-existing apps. While there's a higher-level conceptual challenge with the design of this interconnection between Heroku DX & Terraform, there are use-cases this proof-of-concept still serves, such as  using Heroku Pipelines purely as a build & QA system ([example](https://github.com/mars/tinyrobot-science-terraform)), an external CI system building slugs.
+* **Connecting the Terraform config with Heroku slugs.** This proof-of-concept [contains slug archives](slugs/) that were manually extracted with the Heroku API from pre-existing apps. While there's a higher-level conceptual challenge with the design of this interconnection between Heroku DX & Terraform, there are use-cases this proof-of-concept still serves, such as  using Heroku Pipelines purely as a build & QA system ([example](https://github.com/mars/tinyrobot-science-terraform)), and with an external CI/build system creating slug archives for Terraform.
 * **Renaming Terraform-provisioned Heroku apps.** If apps are renamed, Terraform can no longer access various resources without first manually editing, revising `terraform.tfstate` with the new names. See **terraform-provider-heroku** issues [#124](https://github.com/terraform-providers/terraform-provider-heroku/issues/124) & [#93](https://github.com/terraform-providers/terraform-provider-heroku/issues/93)
 
 ## Requirements
