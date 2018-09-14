@@ -1,7 +1,5 @@
 # Heroku microservices with a unified gateway using Terraform
 
-🔬 This is a community proof-of-concept, [MIT license](LICENSE), provided "as is", without warranty of any kind.
-
 ![Diagram: Terraform a complete multi-app
 architecture with Heroku Private Spaces, 
 a Kong gateway, & DNSimple](doc/terraform-heroku-kong-microservices-v01.png)
@@ -14,12 +12,17 @@ Each microservice (internal app) is exposed to the internet through a Kong [serv
 
 A single [Terraform config](https://www.terraform.io/docs/configuration/index.html) embodies the complete system, enabling high-level collaboration, repeatability, test-ability, and change management.
 
-The primary components are:
+### Primary components
 
 * [Heroku](https://www.heroku.com/home) provides the primatives: Private Spaces, Apps, and Add-ons
 * [Kong CE](https://konghq.com/kong-community-edition/) provides a high-performance HTTP proxy/gateway with [plugins](https://konghq.com/plugins/) supporting access control, flow control, logging, circuit-breaking, and more including custom plugins
 * [Terraform](https://terraform.io) provides declarative, unified systems configuration with support for over 120 providers, a human-friendly configuration as code format, and a deterministic provisioning engine
 * [DNSimple](https://dnsimple.com) provides API-driven domain name configuration.
+
+### Challenges & Caveats
+
+* **Connecting the Terraform config with Heroku slugs.** This proof-of-concept [contains slug archives](slugs/) that were manually extracted with the Heroku API from pre-existing apps. While there's a higher-level conceptual challenge with the design of this interconnection between Heroku DX & Terraform, there are use-cases this proof-of-concept still serves, such as  using Heroku Pipelines purely as a build & QA system ([example](https://github.com/mars/tinyrobot-science-terraform)), an external CI system building slugs.
+* **Renaming Terraform-provisioned Heroku apps.** If apps are renamed, Terraform can no longer access various resources without first manually editing, revising `terraform.tfstate` with the new names. See **terraform-provider-heroku** issues [#124](https://github.com/terraform-providers/terraform-provider-heroku/issues/124) & [#93](https://github.com/terraform-providers/terraform-provider-heroku/issues/93)
 
 ## Requirements
 
@@ -62,3 +65,7 @@ Ensure the [requirements](#user-content-requirements) are met, then,
       -var dns_zone=example.com \
       -var heroku_enterprise_team=example-team
     ```
+
+-----
+
+🔬 This is a community proof-of-concept, [MIT license](LICENSE), provided "as is", without warranty of any kind.
