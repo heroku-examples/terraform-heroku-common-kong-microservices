@@ -8,7 +8,7 @@ A single [Terraform config](https://www.terraform.io/docs/configuration/index.ht
 
 ![Diagram: Terraform a complete multi-app
 architecture with Heroku Private Spaces, 
-a Kong gateway, & DNSimple](doc/terraform-heroku-kong-microservices-v01.png)
+a Kong gateway, & DNSimple](doc/terraform-heroku-kong-microservices-v02.png)
 
 ## Primary components
 
