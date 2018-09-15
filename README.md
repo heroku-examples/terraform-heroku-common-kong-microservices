@@ -18,6 +18,7 @@ See also: [Heroku Enterprise / Private Spaces version of this architecture](http
 
 ## Challenges & Caveats
 
+* **Config drift when using Heroku Dashboard or CLI.** Once the config is applied, if changes are made to the resources outside of Terraform, such as scaling dynos, setting config vars, changing add-ons, etc, then the Terraform state will no longer match its configuration, making it impossible to apply or destroy further until the drifting values are imported (for new resources) or manually updated in `terraform.tfstate`.
 * **Connecting the Terraform config with Heroku slugs.** This proof-of-concept [contains slug archives](slugs/) that were manually extracted with the Heroku API from pre-existing apps. While there's a higher-level conceptual challenge with the design of this interconnection between Heroku DX & Terraform, there are use-cases this proof-of-concept still serves, such as  using Heroku Pipelines purely as a build & QA system ([example](https://github.com/mars/tinyrobot-science-terraform)), and with an external CI/build system creating slug archives for Terraform.
 * **Renaming Terraform-provisioned Heroku apps.** If apps are renamed, Terraform can no longer access various resources without first manually editing, revising `terraform.tfstate` with the new names. See **terraform-provider-heroku** issues [#124](https://github.com/terraform-providers/terraform-provider-heroku/issues/124) & [#93](https://github.com/terraform-providers/terraform-provider-heroku/issues/93)
 
