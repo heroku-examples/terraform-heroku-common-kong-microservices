@@ -63,7 +63,7 @@ resource "heroku_addon" "kong_pg" {
 resource "heroku_slug" "kong" {
   app                            = "${heroku_app.kong.id}"
   buildpack_provided_description = "Kong"
-  file_path                      = "slugs/kong-auto-admin.tgz"
+  file_path                      = "slugs/kong.tgz"
 
   process_types = {
     release = "bin/heroku-buildpack-kong-release"
