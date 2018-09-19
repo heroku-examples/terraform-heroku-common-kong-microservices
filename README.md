@@ -13,7 +13,7 @@ A single [Terraform config](https://www.terraform.io/docs/configuration/index.ht
 ## Primary components
 
 * [Heroku](https://www.heroku.com/home) provides the primatives: Apps and Add-ons
-* [Kong CE](https://konghq.com/kong-community-edition/) provides a high-performance HTTP proxy/gateway with [plugins](https://konghq.com/plugins/) supporting access control, flow control, logging, circuit-breaking, and more including custom plugins
+* [Kong CE on Heroku](https://github.com/heroku/heroku-kong) provides a high-performance HTTP proxy/gateway with [plugins](https://konghq.com/plugins/) supporting access control, flow control, logging, circuit-breaking, and more including custom plugins
 * [Terraform](https://terraform.io) provides declarative, unified systems configuration with support for over 120 providers, a human-friendly configuration as code format, and a deterministic provisioning engine
 
 ## Challenges & Caveats
