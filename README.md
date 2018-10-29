@@ -8,7 +8,7 @@ A single [Terraform config](https://www.terraform.io/docs/configuration/index.ht
 
 ![Diagram: Terraform a complete multi-app architecture with a Kong gateway](doc/terraform-heroku-common-kong-microservices-v01.png)
 
-▶ See also: **[Heroku Enterprise / Private Spaces version of this architecture](https://github.com/heroku-examples/terraform-heroku-kong-microservices)**
+▶ See also: **[Heroku Enterprise / Private Spaces version of this architecture](https://github.com/heroku-examples/terraform-heroku-enterprise-kong-microservices)**
 
 ## Primary components
 
