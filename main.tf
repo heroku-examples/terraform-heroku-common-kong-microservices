@@ -18,17 +18,14 @@ locals {
 }
 
 provider "heroku" {
-  version = "~> 1.4"
+  version = "~> 1.7"
 }
 
 provider "kong" {
-  version = "~> 1.7"
+  version = "~> 1.9"
 
-  # Optional: use insecure until DNS is ready at dnsimple
-  # kong_admin_uri = "${local.kong_insecure_admin_uri}"
   kong_admin_uri = "${local.kong_admin_uri}"
-
-  kong_api_key = "${random_id.kong_admin_api_key.b64_url}"
+  kong_api_key   = "${random_id.kong_admin_api_key.b64_url}"
 }
 
 provider "random" {
@@ -56,34 +53,29 @@ resource "heroku_app" "kong" {
 }
 
 resource "heroku_addon" "kong_pg" {
-  app  = "${heroku_app.kong.id}"
+  app  = "${heroku_app.kong.name}"
   plan = "heroku-postgresql:hobby-dev"
 }
 
-resource "heroku_slug" "kong" {
-  app                            = "${heroku_app.kong.id}"
-  buildpack_provided_description = "Kong"
-  file_path                      = "slugs/kong.tgz"
+# The Kong Provider is not yet compatible with Kong 1.0 (buildpack & app v7.0),
+# so instead use 0.14 (buildpack & app v6.0).
+resource "heroku_build" "kong" {
+  app        = "${heroku_app.kong.name}"
+  buildpacks = ["https://github.com/heroku/heroku-buildpack-kong#v6.0.0"]
 
-  process_types = {
-    release = "bin/heroku-buildpack-kong-release"
-    web     = "bin/heroku-buildpack-kong-web"
+  source = {
+    # This app uses a community buildpack, set it in `buildpacks` above.
+    url     = "https://github.com/heroku/heroku-kong/archive/v6.0.1.tar.gz"
+    version = "v6.0.1"
   }
 }
 
-resource "heroku_app_release" "kong" {
-  app     = "${heroku_app.kong.id}"
-  slug_id = "${heroku_slug.kong.id}"
-
-  depends_on = ["heroku_addon.kong_pg"]
-}
-
 resource "heroku_formation" "kong" {
-  app        = "${heroku_app.kong.id}"
+  app        = "${heroku_app.kong.name}"
   type       = "web"
   quantity   = 1
   size       = "Standard-1x"
-  depends_on = ["heroku_app_release.kong"]
+  depends_on = ["heroku_build.kong"]
 
   provisioner "local-exec" {
     command = "./bin/kong-health-check ${local.kong_base_url}/kong-admin"
@@ -110,27 +102,23 @@ resource "heroku_app" "wasabi" {
   }
 }
 
-resource "heroku_slug" "wasabi" {
-  app                            = "${heroku_app.wasabi.id}"
-  buildpack_provided_description = "Node.js"
-  file_path                      = "slugs/wasabi-secure.tgz"
+resource "heroku_build" "wasabi" {
+  app        = "${heroku_app.wasabi.name}"
+  buildpacks = ["https://github.com/heroku/heroku-buildpack-nodejs"]
 
-  process_types = {
-    web = "npm start"
+  source = {
+    # This app uses a community buildpack, set it in `buildpacks` above.
+    url     = "https://github.com/mars/wasabi-secure/archive/v1.0.0.tar.gz"
+    version = "v1.0.0"
   }
 }
 
-resource "heroku_app_release" "wasabi" {
-  app     = "${heroku_app.wasabi.id}"
-  slug_id = "${heroku_slug.wasabi.id}"
-}
-
 resource "heroku_formation" "wasabi" {
-  app        = "${heroku_app.wasabi.id}"
+  app        = "${heroku_app.wasabi.name}"
   type       = "web"
   quantity   = 1
   size       = "Standard-1x"
-  depends_on = ["heroku_app_release.wasabi"]
+  depends_on = ["heroku_build.wasabi"]
 }
 
 resource "kong_service" "wasabi" {
@@ -152,9 +140,11 @@ resource "kong_plugin" "wasabi_internal_api_key" {
   name       = "request-transformer"
   service_id = "${kong_service.wasabi.id}"
 
-  config = {
-    add.headers = "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}"
-  }
+  config_json = <<EOT
+    {
+      "add": { "headers": [ "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}" ]}
+  	}
+  EOT
 }
 
 output "wasabi_service_url" {

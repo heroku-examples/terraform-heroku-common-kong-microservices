@@ -42,7 +42,7 @@ Ensure the [requirements](#user-content-requirements) are met, then,
     git clone git@github.com:heroku-examples/terraform-heroku-common-kong-microservices.git
     cd terraform-heroku-common-kong-microservices/
     ```
-2. Install [terraform-provider-kong 1.7.0](https://github.com/kevholditch/terraform-provider-kong/releases/tag/v1.7.0)
+2. Install [terraform-provider-kong 1.9.1](https://github.com/kevholditch/terraform-provider-kong/releases/tag/v1.9.1)
     * download the `.zip` asset for your computer's architecture
     * unzip it into `terraform.d/plugins/$ARCH/`
     * where `$ARCH` is the computer's architecture, like `darwin_amd64`
