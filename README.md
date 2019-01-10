@@ -55,6 +55,9 @@ Ensure the [requirements](#user-content-requirements) are met, then,
     ```bash
     terraform apply -var name=kong-micro -var heroku_team=my-team
     ```
+7. Visit the output URLs in a web browser to demonstrate the secure backend & public gateway:
+    - ❌ `terraform output wasabi_backend_url` not directly accessible
+    - ✅ `terraform output wasabi_public_url`
 
 -----
 

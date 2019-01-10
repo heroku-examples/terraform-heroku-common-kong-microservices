@@ -140,13 +140,15 @@ resource "kong_plugin" "wasabi_internal_api_key" {
   name       = "request-transformer"
   service_id = "${kong_service.wasabi.id}"
 
-  config_json = <<EOT
-    {
-      "add": { "headers": [ "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}" ]}
-  	}
-  EOT
+  config = {
+    add.headers = "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}"
+  }
 }
 
-output "wasabi_service_url" {
+output "wasabi_backend_url" {
+  value = "https://${heroku_app.wasabi.name}.herokuapp.com"
+}
+
+output "wasabi_public_url" {
   value = "${local.kong_base_url}/wasabi"
 }
