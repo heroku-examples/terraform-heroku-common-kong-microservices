@@ -22,7 +22,7 @@ provider "heroku" {
 }
 
 provider "kong" {
-  version = "~> 1.9"
+  version = "~> 2.0"
 
   kong_admin_uri = "${local.kong_admin_uri}"
   kong_api_key   = "${random_id.kong_admin_api_key.b64_url}"
@@ -44,6 +44,8 @@ resource "heroku_app" "kong" {
   region = "${var.heroku_region}"
 
   config_vars {
+    # Kong master at: fix(request-transformer) handle Host header correctly
+    KONG_GIT_COMMITISH    = "edb38b8d74709a255247ff60ecb20de4cca9e6c0"
     KONG_HEROKU_ADMIN_KEY = "${random_id.kong_admin_api_key.b64_url}"
   }
 
@@ -57,16 +59,15 @@ resource "heroku_addon" "kong_pg" {
   plan = "heroku-postgresql:hobby-dev"
 }
 
-# The Kong Provider is not yet compatible with Kong 1.0 (buildpack & app v7.0),
-# so instead use 0.14 (buildpack & app v6.0).
 resource "heroku_build" "kong" {
   app        = "${heroku_app.kong.name}"
-  buildpacks = ["https://github.com/heroku/heroku-buildpack-kong#v6.0.0"]
+  buildpacks = ["https://github.com/heroku/heroku-buildpack-kong#v7.0.1"]
+  depends_on = ["heroku_addon.kong_pg"]
 
   source = {
     # This app uses a community buildpack, set it in `buildpacks` above.
-    url     = "https://github.com/heroku/heroku-kong/archive/v6.0.1.tar.gz"
-    version = "v6.0.1"
+    url     = "https://github.com/heroku/heroku-kong/archive/v7.0.0.tar.gz"
+    version = "v7.0.1"
   }
 }
 
@@ -140,9 +141,15 @@ resource "kong_plugin" "wasabi_internal_api_key" {
   name       = "request-transformer"
   service_id = "${kong_service.wasabi.id}"
 
-  config = {
-    add.headers = "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}"
+  config_json = <<EOF
+  {
+    "add": {
+      "headers": [
+        "X-Internal-API-Key: ${random_id.wasabi_internal_api_key.b64_url}"
+      ]
+    }
   }
+EOF
 }
 
 output "wasabi_backend_url" {
